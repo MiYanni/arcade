@@ -97,6 +97,10 @@ jobs:
       - ${{ each pair in variable }}:
         - name: ${{ pair.key }}
           value: ${{ pair.value }}
+  - name: ConnectedServiceName
+    value: $[iif(or(eq(variables['_SignType'], 'real'), eq(variables['_SignType'], 'Real')), 'MicroBuild Signing Task (DevDiv)', '')]
+  - name: ConnectedPMEServiceName
+    value: $[iif(or(eq(variables['_SignType'], 'real'), eq(variables['_SignType'], 'Real')), iif(eq(variables['System.TeamProject'], 'DevDiv'), '6cc74545-d7b9-4050-9dfa-ebefcc8961ea', '248d384a-b39b-46e3-8ad5-c2c210d5e7ca'), '')]
 
   # DotNet-HelixApi-Access provides 'HelixApiAccessToken' for internal builds
   - ${{ if and(eq(parameters.enableTelemetry, 'true'), eq(parameters.runAsPublic, 'false'), ne(variables['System.TeamProject'], 'public'), notin(variables['Build.Reason'], 'PullRequest')) }}:
@@ -118,11 +122,8 @@ jobs:
           signType: $(_SignType)
           zipSources: false
           feedSource: https://dnceng.pkgs.visualstudio.com/_packaging/MicroBuildToolset/nuget/v3/index.json
-          ConnectedServiceName: 'MicroBuild Signing Task (DevDiv)'
-          ${{ if eq(variables['System.TeamProject'], 'DevDiv') }}:
-            ConnectedPMEServiceName: 6cc74545-d7b9-4050-9dfa-ebefcc8961ea
-          ${{ else }}:
-            ConnectedPMEServiceName: 248d384a-b39b-46e3-8ad5-c2c210d5e7ca
+          ConnectedServiceName: $(ConnectedServiceName)
+          ConnectedPMEServiceName: $(ConnectedPMEServiceName)
         env:
           TeamName: $(_TeamName)
         continueOnError: ${{ parameters.continueOnError }}
